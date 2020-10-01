@@ -15,10 +15,10 @@ MongoDB >= 3.6
 # Install
 
 For this package :
-`npm i mongoose-references-integrity-checker`
+```npm i mongoose-references-integrity-checker```
 
 If you would like to integrate it with soft deleting:
-`npm i mongoose-references-integrity-checker mongoose-soft-deleting`
+```npm i mongoose-references-integrity-checker mongoose-soft-deleting```
 
 # Concepts
 

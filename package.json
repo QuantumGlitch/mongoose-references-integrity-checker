@@ -16,6 +16,7 @@
     "integrity",
     "checker",
     "relationship",
+    "cascade",
     "soft",
     "delete"
   ],
