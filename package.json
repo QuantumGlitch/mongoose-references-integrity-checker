@@ -1,0 +1,32 @@
+{
+  "name": "mongoose-references-integrity-checker",
+  "version": "1.0.0",
+  "description": "Package useful for mantaining the references structure of mongoose models. Supporting soft delete.",
+  "main": "index.ts",
+  "scripts": {
+    "test": "mocha tests/base.js --exit; mocha tests/soft-delete.js --exit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuantumGlitch/mongoose-references-integrity-checker.git"
+  },
+  "keywords": [
+    "mongoose",
+    "reference",
+    "integrity",
+    "checker",
+    "relationship",
+    "soft",
+    "delete"
+  ],
+  "author": "QauntumGlitch",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/QuantumGlitch/mongoose-references-integrity-checker/issues"
+  },
+  "homepage": "https://github.com/QuantumGlitch/mongoose-references-integrity-checker#readme",
+  "dependencies": {
+    "mongoose": "^5.10.7",
+    "mongoose-soft-deleting": "^1.0.0"
+  }
+}
