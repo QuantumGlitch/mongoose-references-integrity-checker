@@ -9,7 +9,7 @@ This is based on middleware hook remove and deleteOne of mongoose. If you would 
 
 # Dependencies
 
-Mongoose >= 5.10.7
+Mongoose >= 5.10.7, 
 MongoDB >= 3.6
 
 # Install
