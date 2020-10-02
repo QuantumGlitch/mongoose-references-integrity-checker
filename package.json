@@ -21,7 +21,7 @@
     "delete"
   ],
   "author": "QauntumGlitch",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/QuantumGlitch/mongoose-references-integrity-checker/issues"
   },

@@ -1,4 +1,4 @@
-# mongoose-references-integrity-checker
+# Package: mongoose-references-integrity-checker
 
 Package useful for mantaining the references integrity and structure of mongoose models.
 It provides cascade deleting, and ref support at any nested level.
