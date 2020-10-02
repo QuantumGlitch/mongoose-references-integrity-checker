@@ -113,7 +113,7 @@ function plugin(modelName, schema) {
         .updateMany(
           getFindQueryObjectFor(modelRef, pathRef, documentId),
           ...getUpdateQueryObjectFor(modelRef, pathRef, documentId)
-        );
+        ).exec();
   }
 
   async function onDeleteCascade(
@@ -124,11 +124,11 @@ function plugin(modelName, schema) {
   ) {
     const queryObject = getFindQueryObjectFor(modelRef, pathRef, documentId);
 
-    if (softDelete) await mongoose.model(modelRef).updateMany(queryObject, { $set: { _deleted } });
+    if (softDelete) await mongoose.model(modelRef).updateMany(queryObject, { $set: { _deleted } }).exec();
     else {
       const documents = await mongoose.model(modelRef).find(queryObject);
       // We need to use the deleteOne function to trigger again the hooks for checking references
-      await Promise.all(documents.map((doc) => doc.deleteOne()));
+      await Promise.all(documents.map((doc) => doc.deleteOne().exec()));
     }
   }
 
