@@ -113,7 +113,8 @@ function plugin(modelName, schema) {
         .updateMany(
           getFindQueryObjectFor(modelRef, pathRef, documentId),
           ...getUpdateQueryObjectFor(modelRef, pathRef, documentId)
-        ).exec();
+        )
+        .exec();
   }
 
   async function onDeleteCascade(
@@ -124,9 +125,10 @@ function plugin(modelName, schema) {
   ) {
     const queryObject = getFindQueryObjectFor(modelRef, pathRef, documentId);
 
-    if (softDelete) await mongoose.model(modelRef).updateMany(queryObject, { $set: { _deleted } }).exec();
+    if (softDelete)
+      await mongoose.model(modelRef).updateMany(queryObject, { $set: { _deleted } }).exec();
     else {
-      const documents = await mongoose.model(modelRef).find(queryObject);
+      const documents = await mongoose.model(modelRef).find(queryObject).exec();
       // We need to use the deleteOne function to trigger again the hooks for checking references
       await Promise.all(documents.map((doc) => doc.deleteOne().exec()));
     }
@@ -142,7 +144,7 @@ function plugin(modelName, schema) {
       const queryObject = getFindQueryObjectFor(modelRef, pathRef, documentId);
       let constrainedDoc = null;
 
-      if ((constrainedDoc = await mongoose.model(modelRef).findOne(queryObject)))
+      if ((constrainedDoc = await mongoose.model(modelRef).findOne(queryObject).exec()))
         // Cannot remove if exists at least one referencing this document
         throw new RefConstraintError({
           modelName,
