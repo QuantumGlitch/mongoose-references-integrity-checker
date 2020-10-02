@@ -197,5 +197,10 @@ function plugin(modelName, schema) {
   });
 }
 
+plugin.consistentModel = function (modelName, schema) {
+  this(modelName, schema);
+  return mongoose.model(modelName, schema);
+};
+
 plugin.RefConstraintError = RefConstraintError;
 module.exports = plugin;
