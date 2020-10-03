@@ -4,24 +4,51 @@ Package useful for mantaining the references integrity and structure of mongoose
 It provides cascade deleting, and ref support at any nested level.
 Also include support for soft deleting.
 
-N.B:
-This is based on middleware hook remove and deleteOne of mongoose. If you would like to mantain the integrity anyway, you should always use this middleware even on a bunch of data (obviously at the cost of performance) by looping over the collection and deleting singularly every document.
+**N.B:**
+This is based on middleware hook **remove** and **deleteOne** of mongoose. If you would like to mantain the integrity anyway, you should always use this middleware even on a bunch of data (obviously at the cost of performance) by looping over the collection and deleting singularly every document.
+
+If you are interested in the integrity of sub references too, (watch this out)[https://github.com/QuantumGlitch/mongoose-sub-references-integrity-checker].
 
 # Dependencies
 
-Mongoose >= 5.10.7, 
+Mongoose >= 5.10.7,
 MongoDB >= 3.6
 
 # Install
 
 For this package :
+
 ```shell
 npm i mongoose-references-integrity-checker
 ```
 
 If you would like to integrate it with soft deleting:
+
 ```shell
 npm i mongoose-references-integrity-checker mongoose-soft-deleting
+```
+
+# Setup
+
+For setting up the integrity checker on a mongoose schema, you have two options:
+
+1.
+
+```js
+const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
+
+const TestSchema = new mongoose.Schema({});
+referencesIntegrityChecker('Test', TestSchema);
+const TestModel = mongoose.model('Test', TestSchema);
+```
+
+2.
+
+```js
+const { consistentModel } = require('mongoose-references-integrity-checker');
+
+const TestSchema = new mongoose.Schema({});
+const TestModel = consistentModel('Test', TestSchema);
 ```
 
 # Concepts
@@ -30,22 +57,23 @@ npm i mongoose-references-integrity-checker mongoose-soft-deleting
 
 A reference could stay in three possible states:
 
-- Required
-- Required and Cascade
-- Not required
+- **Required**
+  ( Deleting the parent of the relationship will throw an error )
+- **Required and Cascade**
+  ( Deleting the parent of the relationship will delete all of his children )
+- **Not required**
+  ( Deleting the parent will unset the ref on all of his children )
 
 ### Required
 
 Setting up the models in this way :
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
-const { RefConstraintError } = referencesIntegrityChecker;
+const { consistentModel, RefConstraintError } = require('mongoose-references-integrity-checker');
 
 // House - 1
 const HouseSchema = new mongoose.Schema({});
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
+const HouseModel = consistentModel('House', HouseSchema);
 
 // Room - N
 const RoomSchema = new mongoose.Schema({
@@ -56,8 +84,7 @@ const RoomSchema = new mongoose.Schema({
     required: true,
   },
 });
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
+const RoomModel = consistentModel('Room', RoomSchema);
 
 ...
 
@@ -67,7 +94,7 @@ const child = await new RoomModel({ house: parent._id }).save();
 
 try{
 // Try delete
-await parent.remove();
+await parent.deleteOne();
 }catch(e){
     assert(e instanceof RefConstraintError);
 }
@@ -83,13 +110,11 @@ The reference is required on the child of the relationship, so you can't delete 
 Consider this situation:
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
-const { RefConstraintError } = referencesIntegrityChecker;
+const { consistentModel, RefConstraintError } = require('mongoose-references-integrity-checker');
 
 // House - 1
 const HouseSchema = new mongoose.Schema({});
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
+const HouseModel = consistentModel('House', HouseSchema);
 
 // Room - N
 const RoomSchema = new mongoose.Schema({
@@ -101,8 +126,7 @@ const RoomSchema = new mongoose.Schema({
     cascade: true
   },
 });
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
+const RoomModel = consistentModel('Room', RoomSchema);
 
 ...
 
@@ -112,7 +136,7 @@ const child0 = await new RoomModel({ house: parent._id }).save();
 const child1 = await new RoomModel({ house: parent._id }).save();
 
 // Delete
-await parent.remove();
+await parent.deleteOne();
 
 // All deleted
 assert(!await HouseModel.findById(parent._id));
@@ -128,13 +152,11 @@ Deleting the parent of the relationship will delete all his children.
 This is the last use case :
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
-const { RefConstraintError } = referencesIntegrityChecker;
+const { consistentModel, RefConstraintError } = require('mongoose-references-integrity-checker');
 
 // House - 1
 const HouseSchema = new mongoose.Schema({});
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
+const HouseModel = consistentModel('House', HouseSchema);
 
 // Room - N
 const RoomSchema = new mongoose.Schema({
@@ -145,8 +167,7 @@ const RoomSchema = new mongoose.Schema({
     required: false,
   },
 });
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
+const RoomModel = consistentModel('Room', RoomSchema);
 
 ...
 
@@ -154,7 +175,7 @@ const RoomModel = mongoose.model('Room', RoomSchema);
 const parent = await new HouseModel().save();
 const child = await new RoomModel({ house: parent._id }).save();
 
-await parent.remove();
+await parent.deleteOne();
 
 // Ref on child will be null
 assert(!child.house);
@@ -167,13 +188,6 @@ If the reference is not required then deleting the parent of the relationship wi
 In the last examples we've seen the most simple case, in which the ref on the child is in the root of the document. Any way you can nest it in the way you prefer and the usage will be the same.
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
-const { RefConstraintError } = referencesIntegrityChecker;
-
-const HouseSchema = new mongoose.Schema({});
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
-
 const RoomSchema = new mongoose.Schema({
   pathToRef: {
     ...
@@ -191,8 +205,6 @@ const RoomSchema = new mongoose.Schema({
     ...
   },
 });
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
 ```
 
 ## Soft Delete
@@ -206,16 +218,13 @@ The behaviour in this case will be about the same with some differences.
 If you try to soft delete the parent of the relationship, then will be thrown the same RefConstraintError as before.
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
+const { consistentModel, RefConstraintError } = require('mongoose-references-integrity-checker');
 const softDeletePlugin = require('mongoose-soft-deleting');
-
-const { RefConstraintError } = referencesIntegrityChecker;
 
 // House - 1
 const HouseSchema = new mongoose.Schema({});
 HouseSchema.plugin(softDeletePlugin);
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
+const HouseModel = consistentModel('House', HouseSchema);
 
 // Room - N
 const RoomSchema = new mongoose.Schema({
@@ -227,8 +236,7 @@ const RoomSchema = new mongoose.Schema({
   },
 });
 RoomSchema.plugin(softDeletePlugin);
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
+const RoomModel = consistentModel('Room', RoomSchema);
 
 ...
 
@@ -237,8 +245,8 @@ const parent = await new HouseModel().save();
 const child = await new RoomModel({ house: parent._id }).save();
 
 try{
-// Try soft delete
-await parent.softDelete(true);
+  // Try soft delete
+  await parent.softDelete(true);
 }catch(e){
     assert(e instanceof RefConstraintError);
 }
@@ -250,16 +258,13 @@ await parent.softDelete(true);
 If you try to soft delete or restore the parent of the relationship then all his children will have the same fate.
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
+const { consistentModel, RefConstraintError } = require('mongoose-references-integrity-checker');
 const softDeletePlugin = require('mongoose-soft-deleting');
-
-const { RefConstraintError } = referencesIntegrityChecker;
 
 // House - 1
 const HouseSchema = new mongoose.Schema({});
 HouseSchema.plugin(softDeletePlugin);
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
+const HouseModel = consistentModel('House', HouseSchema);
 
 // Room - N
 const RoomSchema = new mongoose.Schema({
@@ -272,8 +277,7 @@ const RoomSchema = new mongoose.Schema({
   },
 });
 RoomSchema.plugin(softDeletePlugin);
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
+const RoomModel = consistentModel('Room', RoomSchema);
 
 ...
 
@@ -305,16 +309,13 @@ assert(!((await RoomModel.findById(child1._id)).isSoftDeleted()));
 If you try to soft delete the parent of the relationship then only the parent will be soft deleted. The child will still have his reference set to the parent (because even if the parent is soft deleted, it still exists).
 
 ```js
-const referencesIntegrityChecker = require('mongoose-references-integrity-checker');
+const { consistentModel, RefConstraintError } = require('mongoose-references-integrity-checker');
 const softDeletePlugin = require('mongoose-soft-deleting');
-
-const { RefConstraintError } = referencesIntegrityChecker;
 
 // House - 1
 const HouseSchema = new mongoose.Schema({});
 HouseSchema.plugin(softDeletePlugin);
-referencesIntegrityChecker('House', HouseSchema);
-const HouseModel = mongoose.model('House', HouseSchema);
+const HouseModel = consistentModel('House', HouseSchema);
 
 // Room - N
 const RoomSchema = new mongoose.Schema({
@@ -326,8 +327,7 @@ const RoomSchema = new mongoose.Schema({
   },
 });
 RoomSchema.plugin(softDeletePlugin);
-referencesIntegrityChecker('Room', RoomSchema);
-const RoomModel = mongoose.model('Room', RoomSchema);
+const RoomModel = consistentModel('Room', RoomSchema);
 
 ...
 
@@ -335,7 +335,7 @@ const RoomModel = mongoose.model('Room', RoomSchema);
 const parent = await new HouseModel().save();
 const child = await new RoomModel({ house: parent._id }).save();
 
-await parent.remove();
+await parent.deleteOne();
 
 // Ref on child will be the same
 assert(child.house.equals(parent._id));
