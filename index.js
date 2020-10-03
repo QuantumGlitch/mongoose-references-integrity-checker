@@ -125,13 +125,13 @@ function plugin(modelName, schema) {
   ) {
     const queryObject = getFindQueryObjectFor(modelRef, pathRef, documentId);
 
+    const documents = await mongoose.model(modelRef).find(queryObject).exec();
+
     if (softDelete)
-      await mongoose.model(modelRef).updateMany(queryObject, { $set: { _deleted } }).exec();
-    else {
-      const documents = await mongoose.model(modelRef).find(queryObject).exec();
-      // We need to use the deleteOne function to trigger again the hooks for checking references
-      await Promise.all(documents.map((doc) => doc.deleteOne().exec()));
-    }
+      // We need to use the softDelete function to trigger again the hooks for checking references
+      await Promise.all(documents.map((doc) => doc.softDelete(_deleted)));
+    // We need to use the deleteOne function to trigger again the hooks for checking references
+    else await Promise.all(documents.map((doc) => doc.deleteOne()));
   }
 
   async function onDeleteBlock(
