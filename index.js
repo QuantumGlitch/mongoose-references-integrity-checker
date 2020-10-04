@@ -171,14 +171,14 @@ function plugin(modelName, schema) {
   }
 
   // Before remove, check if the removing is possible
-  schema.pre('remove', { document: true }, async function () {
-    const _id = this._id;
+  schema.pre('remove', async function () {
+    const _id = this._id || this._conditions._id;
     if (_id) await onDelete(_id);
   });
 
   // Before deleteOne, check if the removing is possible
-  schema.pre('deleteOne', { document: true }, async function () {
-    const _id = this._id;
+  schema.pre('deleteOne', async function () {
+    const _id = this._id || this._conditions._id;
     if (_id) await onDelete(_id);
   });
 
