@@ -26,7 +26,7 @@
     "url": "https://github.com/QuantumGlitch/mongoose-references-integrity-checker/issues"
   },
   "homepage": "https://github.com/QuantumGlitch/mongoose-references-integrity-checker#readme",
-  "dependencies": {
+  "devDependencies": {
     "mongoose": "^5.10.7",
     "mongoose-soft-deleting": "^1.0.0"
   }

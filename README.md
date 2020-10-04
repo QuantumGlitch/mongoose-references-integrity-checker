@@ -344,7 +344,11 @@ assert(child.house.equals(parent._id));
 # Test
 
 You can try the tests using the following command ( before you need to change the connection to MongoDB ) :
-`npm run test`
+
+```shell
+npm install --test
+npm run test
+```
 
 # Support
 
