@@ -200,7 +200,7 @@ function plugin(modelName, schema) {
 }
 
 plugin.consistentModel = function (modelName, schema) {
-  this(modelName, schema);
+  plugin(modelName, schema);
   return mongoose.model(modelName, schema);
 };
 
