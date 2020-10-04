@@ -7,7 +7,7 @@ Also include support for soft deleting.
 **N.B:**
 This is based on middleware hook **remove** and **deleteOne** of mongoose. If you would like to mantain the integrity anyway, you should always use this middleware even on a bunch of data (obviously at the cost of performance) by looping over the collection and deleting singularly every document.
 
-If you are interested in the integrity of sub references too, [watch this out][https://github.com/QuantumGlitch/mongoose-sub-references-integrity-checker].
+If you are interested in the integrity of sub references too, [watch this out](https://github.com/QuantumGlitch/mongoose-sub-references-integrity-checker).
 
 # Dependencies
 
