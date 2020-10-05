@@ -29,5 +29,8 @@
   "devDependencies": {
     "mongoose": "^5.10.7",
     "mongoose-soft-deleting": "^1.0.0"
+  },
+  "peerDependencies": {
+    "mongoose": "^5.10.7"
   }
 }
