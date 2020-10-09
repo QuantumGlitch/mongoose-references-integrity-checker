@@ -159,7 +159,7 @@ function plugin(modelName, schema) {
     for (let { modelName: modelRef, path, schemaType } of refs[modelName]) {
       if (schemaType.required) {
         // This reference is required
-        if (schemaType.cascade)
+        if (schemaType.cascade || schemaType.options.cascade)
           // Delete references on cascade
           await onDeleteCascade(modelRef, path, documentId, softDeleteOptions);
         // Block delete if references exist
